@@ -38,7 +38,7 @@
             font-size: 14px;
             line-height: 1.6;
             border-right: 1px solid #dee2e6;
-            height: 100vh;
+            height: 70vh; /* Adjusted height to accommodate chat section */
             box-sizing: border-box;
             flex: 1;
             resize: none;
@@ -92,10 +92,16 @@
             bottom: 0;
             left: 0;
             width: 50%;
+            height: 30vh; /* Fixed height for chat section */
             background: #f8f9fa;
             border-top: 1px solid #dee2e6;
             padding: 10px;
             box-sizing: border-box;
+            overflow-y: auto; /* Enable scrolling */
+            transition: transform 0.3s ease;
+        }
+        .chat-section.fullscreen {
+            transform: translateY(100%);
         }
         .chat-input {
             display: flex;
@@ -125,14 +131,13 @@
             display: none;
         }
         .history-controls {
-            position: fixed;
-            top: 80px;
-            right: 0;
-            padding: 10px;
-            background: rgba(255, 255, 255, 0.9);
-            border-bottom-left-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            z-index: 1000;
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .fullscreen .chat-section,
+        .fullscreen .history-controls {
+            display: none;
         }
     </style>
 </head>
@@ -151,10 +156,6 @@
     <div class="editing-controls">
         <button onclick="saveChanges()">Save Markdown</button>
         <button onclick="saveToGitHub()">Publish to GitHub</button>
-    </div>
-
-    <div class="history-controls">
-        <button onclick="undoLastChange()" id="undoButton" disabled>Undo Last Change</button>
     </div>
 
     <!-- Add GitHub save modal -->
@@ -188,12 +189,17 @@
             <button onclick="askAI()" id="askAIButton">Ask AI</button>
         </div>
         <div id="chatExplanation" class="chat-explanation"></div>
+        <div class="history-controls">
+            <button onclick="undoLastChange()" id="undoButton" disabled>Undo</button>
+            <button onclick="redoLastChange()" id="redoButton" disabled>Redo</button>
+        </div>
     </div>
 
     <script>
         let typingTimer;
         const doneTypingInterval = 500; // ms
         const historyStack = [];
+        const redoStack = [];
         const maxHistory = 50;
 
         function updatePreview() {
@@ -235,6 +241,8 @@
 
         function toggleFullscreen() {
             document.getElementById('mainContainer').classList.toggle('fullscreen');
+            document.querySelector('.chat-section').classList.toggle('fullscreen');
+            document.querySelector('.history-controls').classList.toggle('fullscreen');
         }
 
         function changeStyle(style) {
@@ -351,14 +359,28 @@
                 historyStack.shift();
             }
             document.getElementById('undoButton').disabled = false;
+            redoStack.length = 0; // Clear redo stack
+            document.getElementById('redoButton').disabled = true;
         }
 
         function undoLastChange() {
             if (historyStack.length > 0) {
                 const previousContent = historyStack.pop();
+                redoStack.push(document.querySelector('.markdown-view').value);
                 document.querySelector('.markdown-view').value = previousContent;
                 updatePreview();
                 document.getElementById('undoButton').disabled = historyStack.length === 0;
+                document.getElementById('redoButton').disabled = redoStack.length === 0;
+            }
+        }
+
+        function redoLastChange() {
+            if (redoStack.length > 0) {
+                const nextContent = redoStack.pop();
+                saveToHistory(document.querySelector('.markdown-view').value);
+                document.querySelector('.markdown-view').value = nextContent;
+                updatePreview();
+                document.getElementById('redoButton').disabled = redoStack.length === 0;
             }
         }
 
@@ -378,12 +400,6 @@
                 // Save current state to history before making changes
                 saveToHistory(content);
 
-                // Get selection if any
-                const selectionStart = textarea.selectionStart !== textarea.selectionEnd ? 
-                    textarea.selectionStart : null;
-                const selectionEnd = textarea.selectionStart !== textarea.selectionEnd ? 
-                    textarea.selectionEnd : null;
-
                 const response = await fetch('/chat', {
                     method: 'POST',
                     headers: {
@@ -391,9 +407,7 @@
                     },
                     body: JSON.stringify({
                         content: content,
-                        message: input.value,
-                        selectionStart: selectionStart,
-                        selectionEnd: selectionEnd
+                        message: input.value
                     })
                 });
 
