@@ -56,6 +56,37 @@
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
             z-index: 1000;
         }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1001;
+        }
+        .modal-content {
+            background: white;
+            width: 400px;
+            margin: 100px auto;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .modal input {
+            width: 100%;
+            padding: 8px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .modal-buttons {
+            margin-top: 20px;
+            text-align: right;
+        }
+        .modal-buttons button {
+            margin-left: 10px;
+        }
     </style>
 </head>
 <body>
@@ -71,7 +102,23 @@
     </div>
     
     <div class="editing-controls">
-        <button onclick="saveChanges()">Save Changes</button>
+        <button onclick="saveChanges()">Save Markdown</button>
+        <button onclick="saveToGitHub()">Publish to GitHub</button>
+    </div>
+
+    <!-- Add GitHub save modal -->
+    <div id="githubModal" class="modal">
+        <div class="modal-content">
+            <h2>Publish to GitHub Pages</h2>
+            <p class="token-info" style="font-size: 0.9em; color: #666;">
+                Your resume will be published to GitHub Pages
+            </p>
+            <input type="text" id="repoName" placeholder="Repository name" value="resume">
+            <div class="modal-buttons">
+                <button onclick="submitToGitHub()">Publish</button>
+                <button onclick="closeGitHubModal()">Cancel</button>
+            </div>
+        </div>
     </div>
 
     <div class="container" id="mainContainer">
@@ -142,6 +189,85 @@
             .then(response => response.text())
             .then(html => {
                 document.getElementById('htmlView').innerHTML = html;
+            });
+        }
+
+        function saveToGitHub() {
+            {% if not github_authenticated %}
+                const loginUrl = new URL("{{ url_for('github_login') }}", window.location.origin);
+                loginUrl.searchParams.append('content', document.querySelector('.markdown-view').value);
+                loginUrl.searchParams.append('style', document.getElementById('styleSelector').value);
+                loginUrl.searchParams.append('filename', 'resume.html');
+                loginUrl.searchParams.append('repo', 'resume');
+                window.location.href = loginUrl.toString();
+                return;
+            {% endif %}
+            
+            // Set default values and show modal
+            document.getElementById('repoName').value = 'resume';
+            document.getElementById('githubModal').style.display = 'block';
+        }
+
+        // Check for pending data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const pendingContent = localStorage.getItem('pendingContent');
+            if (pendingContent) {
+                document.querySelector('.markdown-view').value = pendingContent;
+                document.getElementById('styleSelector').value = localStorage.getItem('pendingStyle') || 'default';
+                document.getElementById('repoName').value = localStorage.getItem('pendingRepo') || '';
+                
+                // Clear stored data
+                localStorage.removeItem('pendingContent');
+                localStorage.removeItem('pendingStyle');
+                localStorage.removeItem('pendingRepo');
+                
+                // Update preview
+                updatePreview();
+                
+                // Show GitHub modal if we have pending repo data
+                if (localStorage.getItem('pendingRepo')) {
+                    document.getElementById('githubModal').style.display = 'block';
+                }
+            }
+        });
+
+        function closeGitHubModal() {
+            document.getElementById('githubModal').style.display = 'none';
+        }
+
+        function submitToGitHub() {
+            const repoName = document.getElementById('repoName').value;
+            const content = document.querySelector('.markdown-view').value;
+            const style = document.getElementById('styleSelector').value;
+
+            fetch('/save_to_github', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: content,
+                    style: style,
+                    repo: repoName
+                })
+            })
+            .then(response => {
+                if (response.status === 401) {
+                    window.location.href = "{{ url_for('github_login') }}";
+                    return null;
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data && data.url) {
+                    alert('Published! View at: ' + data.url);
+                    closeGitHubModal();
+                } else if (data && data.error) {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('Error: ' + error);
             });
         }
 
