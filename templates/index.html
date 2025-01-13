@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>File to HTML Converter</title>
+    <title>Dashboard - File to HTML Converter</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,8 +11,32 @@
             margin: 0;
             padding: 20px;
         }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
         h1 {
             color: #4CAF50;
+            margin: 0;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logout-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .logout-button:hover {
+            background-color: #c82333;
         }
         form {
             background: #fff;
@@ -53,36 +77,16 @@
         .flash-messages:not(:empty) {
             display: block;
         }
-        .github-auth {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-bottom: 20px;
-        }
-        .auth-status {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .github-button {
-            background-color: #24292e;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .github-button:hover {
-            background-color: #2c3238;
-        }
     </style>
 </head>
 <body>
-    <h1>Convert File to HTML</h1>
+    <div class="header">
+        <h1>Convert File to HTML</h1>
+        <div class="user-info">
+            <span>Welcome, {{ github_username }}!</span>
+            <a href="{{ url_for('github_logout') }}" class="logout-button">Logout</a>
+        </div>
+    </div>
     
     <div class="flash-messages">
         {% with messages = get_flashed_messages() %}
@@ -94,37 +98,19 @@
         {% endwith %}
     </div>
 
-    <div class="github-auth">
-        <div class="auth-status">
-            {% if github_authenticated %}
-                <span>✓ Connected to GitHub as {{ github_username }}</span>
-                <a href="{{ url_for('github_logout') }}"><button class="github-button">Disconnect</button></a>
-            {% else %}
-                <span>Not connected to GitHub</span>
-                <a href="{{ url_for('github_login') }}"><button class="github-button">
-                    Connect with GitHub
-                </button></a>
-            {% endif %}
-        </div>
-    </div>
-
     <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
-        <input type="file" name="file">
+        <input type="file" name="file" accept=".pdf,.pptx,.docx,.xlsx,.jpg,.jpeg,.png,.mp3,.wav,.html,.csv,.json,.xml,.md,.zip">
         <select name="style">
-            <option value="default">Default</option>
-            <option value="style1">Style 1</option>
-            <option value="style2">Style 2</option>
+            <option value="default">Default Style</option>
+            <option value="github">GitHub Style</option>
+            <option value="notion">Notion Style</option>
+            <option value="medium">Medium Style</option>
         </select>
-        <button type="submit">Upload</button>
+        <button type="submit">Convert</button>
     </form>
 
     <div class="supported-formats">
-        <h3>Supported File Formats:</h3>
-        <p>
-            {% for ext in allowed_extensions %}
-                .{{ ext }}{% if not loop.last %}, {% endif %}
-            {% endfor %}
-        </p>
+        <p>Supported file formats: PDF, PPTX, DOCX, XLSX, JPG/JPEG, PNG, MP3, WAV, HTML, CSV, JSON, XML, MD, ZIP</p>
     </div>
 </body>
 </html>

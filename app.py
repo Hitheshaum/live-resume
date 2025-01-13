@@ -10,6 +10,7 @@ from urllib.parse import urlencode
 from openai import OpenAI
 import json
 from dotenv import load_dotenv
+from functools import wraps
 
 # Load environment variables from .env file
 load_dotenv()
@@ -24,6 +25,14 @@ os.environ['OPENAI_API_KEY'] = os.getenv('GITHUB_TOKEN')
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Better secret key for sessions
 markitdown = MarkItDown()
+
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'github_token' not in session:
+            return redirect(url_for('login'))
+        return f(*args, **kwargs)
+    return decorated_function
 
 ALLOWED_EXTENSIONS = {
     'pdf', 'pptx', 'docx', 'xlsx', 'jpg', 'jpeg', 'png', 
@@ -70,8 +79,23 @@ ASSISTANT_FUNCTIONS = [
     }
 ]
 
+@app.route('/')
+def login():
+    if 'github_token' in session:
+        return redirect(url_for('dashboard'))
+    return render_template('login.html')
+
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    """Main dashboard page after login"""
+    return render_template('index.html', 
+                         github_authenticated=True,
+                         github_username=session.get('github_username', ''))
+
 @app.route('/render/<style>')
 @app.route('/render')
+@login_required
 def render_page(style='default'):
     """Endpoint to show the render page with a specific style"""
     return render_template('render.html', 
@@ -105,13 +129,13 @@ def github_login():
 @app.route('/logout/github')
 def github_logout():
     session.pop('github_token', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 @app.route('/login/github/callback')
 def github_callback():
     if 'error' in request.args:
         flash(f"GitHub Error: {request.args['error']}")
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     
     code = request.args.get('code')
     response = requests.post(GITHUB_TOKEN_URL, data={
@@ -124,26 +148,8 @@ def github_callback():
     if 'access_token' in data:
         session['github_token'] = data['access_token']
         # Redirect to the home page after successful login
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     return 'Failed to get access token'
-
-@app.route('/')
-def index():
-    github_username = None
-    if 'github_token' in session:
-        # Get GitHub username if authenticated
-        headers = {'Authorization': f'token {session["github_token"]}'}
-        response = requests.get(f'{GITHUB_API_URL}/user', headers=headers)
-        if response.status_code == 200:
-            github_username = response.json()['login']
-        else:
-            # Token might be invalid, remove it
-            session.pop('github_token', None)
-
-    return render_template('index.html', 
-                         allowed_extensions=ALLOWED_EXTENSIONS,
-                         github_authenticated='github_token' in session,
-                         github_username=github_username)
 
 @app.route('/change_style', methods=['POST'])
 def change_style():
@@ -153,19 +159,20 @@ def change_style():
     return render_markdown(content, style)
 
 @app.route('/upload', methods=['POST'])
+@login_required
 def upload_file():
     if 'file' not in request.files:
         flash('No file provided')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     
     file = request.files['file']
     if file.filename == '':
         flash('No file selected')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     
     if not allowed_file(file.filename):
         flash('File type not supported')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
     try:
         # Save the file temporarily
@@ -197,7 +204,7 @@ def upload_file():
                             github_authenticated='github_token' in session)
     except Exception as e:
         flash(f'Error processing file: {str(e)}')
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
 
 def read_style_file(style_name):
     style_path = os.path.join('static', 'styles', f'{style_name}.css')
