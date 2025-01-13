@@ -222,15 +222,15 @@ def render_markdown(content, style):
     if style == 'style1':
         html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('terminal')
-        return f'<style>{css}</style>{base_wrapper}<div class="terminal">{html_content}</div>{base_wrapper_end}'
+        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="terminal">{html_content}</div>{base_wrapper_end}'
     elif style == 'style2':
         html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('modern_resume')
-        return f'<style>{css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
+        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
     else:
         html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('minimal')
-        return f'<style>{css}</style>{base_wrapper}<div class="content-wrapper">{html_content}</div>{base_wrapper_end}'
+        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="content-wrapper">{html_content}</div>{base_wrapper_end}'
 
 # GitHub configuration
 # Required scope: public_repo (for creating and updating public repositories)

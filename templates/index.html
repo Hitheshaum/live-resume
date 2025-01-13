@@ -80,13 +80,7 @@
     </style>
 </head>
 <body>
-    <div class="header">
-        <h1>Convert File to HTML</h1>
-        <div class="user-info">
-            <span>Welcome, {{ github_username }}!</span>
-            <a href="{{ url_for('github_logout') }}" class="logout-button">Logout</a>
-        </div>
-    </div>
+    {% include 'header.html' %}
     
     <div class="flash-messages">
         {% with messages = get_flashed_messages() %}

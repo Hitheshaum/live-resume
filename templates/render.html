@@ -2,15 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Rendered Content</title>
+    <title>Resume Editor</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles/common.css') }}">
     <style>
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            overflow: hidden;
-        }
         select, button {
             padding: 5px 10px;
             margin: 0 5px;
@@ -139,23 +133,152 @@
         .fullscreen .history-controls {
             display: none;
         }
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0; /* Important for nested flex containers */
+            overflow: hidden;
+        }
+        .controls {
+            background: #fff;
+            padding: 10px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .file-info {
+            color: #666;
+            font-size: 14px;
+        }
+        .control-buttons {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        select, button {
+            padding: 8px 15px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+            font-size: 14px;
+            color: #333;
+        }
+        button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            background-color: #1976D2;
+        }
+        .editor-container {
+            display: flex;
+            flex: 1;
+            min-height: 0; /* Important for nested flex containers */
+            overflow: hidden;
+        }
+        .markdown-view, .html-view {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        .markdown-view {
+            font-family: monospace;
+            resize: none;
+            border: none;
+            border-right: 1px solid #dee2e6;
+            outline: none;
+        }
+        body.fullscreen .header {
+            display: none;
+        }
+        body.fullscreen .content-wrapper {
+            height: 100vh;
+        }
+        
+        /* Isolate header styles */
+        .header {
+            position: relative;
+            z-index: 1000;
+        }
+        
+        /* Content area */
+        .content-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        /* Preview area */
+        .preview-container {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        .preview-content {
+            flex: 1;
+            overflow: auto;
+            padding: 20px;
+        }
+        
+        /* Controls */
+        .controls {
+            background: #fff;
+            padding: 10px 20px;
+            border-bottom: 1px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
-    <div class="controls">
-        <span class="file-info">{{ original_file }}</span>
-        <select id="styleSelector" onchange="changeStyle(this.value)">
-            <option value="default" {% if style == 'default' %}selected{% endif %}>Default Style</option>
-            <option value="style1" {% if style == 'style1' %}selected{% endif %}>Terminal Style</option>
-            <option value="style2" {% if style == 'style2' %}selected{% endif %}>Modern Resume</option>
-        </select>
-        <button onclick="toggleFullscreen()">Toggle Full Screen</button>
-        <a href="{{ url_for('dashboard') }}"><button>New File</button></a>
+    {% include 'header.html' %}
+    <div class="content-wrapper">
+        <div class="controls">
+            <span class="file-info">{{ original_file }}</span>
+            <div class="control-buttons">
+                <select id="styleSelector" onchange="changeStyle(this.value)">
+                    <option value="default" {% if style == 'default' %}selected{% endif %}>Default Style</option>
+                    <option value="style1" {% if style == 'style1' %}selected{% endif %}>Terminal Style</option>
+                    <option value="style2" {% if style == 'style2' %}selected{% endif %}>Modern Resume</option>
+                </select>
+                <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
+                <button onclick="saveChanges()">Save Changes</button>
+                <button onclick="saveToGitHub()">Publish to GitHub</button>
+            </div>
+        </div>
+        <div class="preview-container">
+            <textarea class="markdown-view preview-content" 
+                      spellcheck="false"
+                      oninput="updatePreview()">{{ markdown_content }}</textarea>
+            <div class="html-view preview-content" id="htmlView">
+                {{ html_content|safe }}
+            </div>
+        </div>
     </div>
-    
-    <div class="editing-controls">
-        <button onclick="saveChanges()">Save Markdown</button>
-        <button onclick="saveToGitHub()">Publish to GitHub</button>
+
+    <div class="chat-section">
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask AI to improve your markdown..." 
+                   aria-label="AI improvement request">
+            <button onclick="askAI()" id="askAIButton">Ask AI</button>
+        </div>
+        <div id="chatExplanation" class="chat-explanation"></div>
+        <div class="history-controls">
+            <button onclick="undoLastChange()" id="undoButton" disabled>Undo</button>
+            <button onclick="redoLastChange()" id="redoButton" disabled>Redo</button>
+        </div>
     </div>
 
     <!-- Add GitHub save modal -->
@@ -170,28 +293,6 @@
                 <button onclick="submitToGitHub()">Publish</button>
                 <button onclick="closeGitHubModal()">Cancel</button>
             </div>
-        </div>
-    </div>
-
-    <div class="container" id="mainContainer">
-        <textarea class="markdown-view" 
-                  spellcheck="false"
-                  oninput="updatePreview()">{{ markdown_content }}</textarea>
-        <div class="html-view" id="htmlView">
-            {{ html_content|safe }}
-        </div>
-    </div>
-
-    <div class="chat-section">
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Ask AI to improve your markdown..." 
-                   aria-label="AI improvement request">
-            <button onclick="askAI()" id="askAIButton">Ask AI</button>
-        </div>
-        <div id="chatExplanation" class="chat-explanation"></div>
-        <div class="history-controls">
-            <button onclick="undoLastChange()" id="undoButton" disabled>Undo</button>
-            <button onclick="redoLastChange()" id="redoButton" disabled>Redo</button>
         </div>
     </div>
 
@@ -240,12 +341,11 @@
         }
 
         function toggleFullscreen() {
-            document.getElementById('mainContainer').classList.toggle('fullscreen');
-            document.querySelector('.chat-section').classList.toggle('fullscreen');
-            document.querySelector('.history-controls').classList.toggle('fullscreen');
+            document.body.classList.toggle('fullscreen');
         }
 
         function changeStyle(style) {
+            const previewArea = document.getElementById('htmlView');
             fetch('/change_style', {
                 method: 'POST',
                 headers: {
@@ -258,7 +358,7 @@
             })
             .then(response => response.text())
             .then(html => {
-                document.getElementById('htmlView').innerHTML = html;
+                previewArea.innerHTML = html;
             });
         }
 
