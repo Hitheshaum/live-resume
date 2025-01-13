@@ -87,6 +87,53 @@
         .modal-buttons button {
             margin-left: 10px;
         }
+        .chat-section {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            background: #f8f9fa;
+            border-top: 1px solid #dee2e6;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+        .chat-input button {
+            padding: 8px 15px;
+            background: #0366d6;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .chat-input button:hover {
+            background: #0256b9;
+        }
+        .chat-explanation {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 10px;
+            display: none;
+        }
+        .history-controls {
+            position: fixed;
+            top: 80px;
+            right: 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom-left-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -104,6 +151,10 @@
     <div class="editing-controls">
         <button onclick="saveChanges()">Save Markdown</button>
         <button onclick="saveToGitHub()">Publish to GitHub</button>
+    </div>
+
+    <div class="history-controls">
+        <button onclick="undoLastChange()" id="undoButton" disabled>Undo Last Change</button>
     </div>
 
     <!-- Add GitHub save modal -->
@@ -130,9 +181,20 @@
         </div>
     </div>
 
+    <div class="chat-section">
+        <div class="chat-input">
+            <input type="text" id="chatInput" placeholder="Ask AI to improve your markdown..." 
+                   aria-label="AI improvement request">
+            <button onclick="askAI()" id="askAIButton">Ask AI</button>
+        </div>
+        <div id="chatExplanation" class="chat-explanation"></div>
+    </div>
+
     <script>
         let typingTimer;
         const doneTypingInterval = 500; // ms
+        const historyStack = [];
+        const maxHistory = 50;
 
         function updatePreview() {
             clearTimeout(typingTimer);
@@ -280,6 +342,83 @@
                 this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
                 this.selectionStart = this.selectionEnd = start + 4;
                 updatePreview();
+            }
+        });
+
+        function saveToHistory(content) {
+            historyStack.push(content);
+            if (historyStack.length > maxHistory) {
+                historyStack.shift();
+            }
+            document.getElementById('undoButton').disabled = false;
+        }
+
+        function undoLastChange() {
+            if (historyStack.length > 0) {
+                const previousContent = historyStack.pop();
+                document.querySelector('.markdown-view').value = previousContent;
+                updatePreview();
+                document.getElementById('undoButton').disabled = historyStack.length === 0;
+            }
+        }
+
+        async function askAI() {
+            const input = document.getElementById('chatInput');
+            const button = document.getElementById('askAIButton');
+            const explanation = document.getElementById('chatExplanation');
+            const textarea = document.querySelector('.markdown-view');
+            const content = textarea.value;
+
+            if (!input.value.trim()) return;
+
+            try {
+                button.disabled = true;
+                button.textContent = 'Processing...';
+                
+                // Save current state to history before making changes
+                saveToHistory(content);
+
+                // Get selection if any
+                const selectionStart = textarea.selectionStart !== textarea.selectionEnd ? 
+                    textarea.selectionStart : null;
+                const selectionEnd = textarea.selectionStart !== textarea.selectionEnd ? 
+                    textarea.selectionEnd : null;
+
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        message: input.value,
+                        selectionStart: selectionStart,
+                        selectionEnd: selectionEnd
+                    })
+                });
+
+                const data = await response.json();
+                if (data.improved_content) {
+                    textarea.value = data.improved_content;
+                    explanation.textContent = data.explanation;
+                    explanation.style.display = 'block';
+                    updatePreview();
+                    input.value = '';
+                } else if (data.error) {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Error communicating with AI: ' + error);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Ask AI';
+            }
+        }
+
+        // Add Enter key support for chat input
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                askAI();
             }
         });
     </script>

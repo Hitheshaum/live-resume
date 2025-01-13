@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for, send_from_directory, flash, session
+from flask import Flask, request, render_template, redirect, url_for, send_from_directory, flash, session, jsonify
 from markitdown import MarkItDown
 import markdown
 import os
@@ -7,6 +7,19 @@ import base64
 from datetime import datetime
 import requests
 from urllib.parse import urlencode
+from openai import OpenAI
+import json
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Ensure GitHub token is available
+if not os.getenv('GITHUB_TOKEN'):
+    raise ValueError("GITHUB_TOKEN environment variable is not set")
+
+# Set OpenAI configuration using GitHub token
+os.environ['OPENAI_API_KEY'] = os.getenv('GITHUB_TOKEN')
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Better secret key for sessions
@@ -26,6 +39,36 @@ GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
 GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize'
 GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
 GITHUB_API_URL = 'https://api.github.com'
+
+# Configure OpenAI client with Azure endpoint
+client = OpenAI(
+    base_url="https://models.inference.ai.azure.com",
+    api_key=os.environ['OPENAI_API_KEY'],
+    default_headers={
+        "Authorization": f"Bearer {os.environ['OPENAI_API_KEY']}"
+    }
+)
+
+ASSISTANT_FUNCTIONS = [
+    {
+        "name": "update_markdown_content",
+        "description": "Update and improve the markdown content",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "improved_content": {
+                    "type": "string",
+                    "description": "The improved markdown content with better formatting and structure",
+                },
+                "explanation": {
+                    "type": "string",
+                    "description": "Explanation of improvements made to the content",
+                }
+            },
+            "required": ["improved_content", "explanation"]
+        }
+    }
+]
 
 @app.route('/render/<style>')
 @app.route('/render')
@@ -303,6 +346,41 @@ def handle_github_save():
         return {"url": url}
     except Exception as e:
         return {"error": str(e)}, 500
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    data = request.get_json()
+    current_content = data.get('content', '')
+    user_message = data.get('message', '')
+
+    try:
+        messages = [
+            {
+                "role": "system", 
+                "content": """You are an expert at improving markdown content. 
+                Analyze the content and the user's request, make appropriate improvements, 
+                and return the complete markdown document with your changes. make sure you return the complete original markdown with only minor improvements."""
+            },
+            {
+                "role": "user", 
+                "content": f"Current markdown content:\n\n{current_content}\n\nRequest: {user_message}"
+            }
+        ]
+
+        response = client.chat.completions.create(
+            messages=messages,
+            tools=[{"type": "function", "function": ASSISTANT_FUNCTIONS[0]}],
+            model="gpt-4o-mini"
+        )
+
+        if response.choices[0].finish_reason == "tool_calls":
+            tool_call = response.choices[0].message.tool_calls[0]
+            if tool_call.type == "function":
+                return jsonify(json.loads(tool_call.function.arguments))
+
+        return {"error": "Unexpected response from AI"}, 500
+    except Exception as e:
+        return {"error": f"AI Error: {str(e)}"}, 500
 
 if __name__ == '__main__':
     app.run(debug=True)
