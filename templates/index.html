@@ -2,109 +2,130 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Dashboard - File to HTML Converter</title>
+    <title>Upload Resume - GitHub Pages Resume Creator</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f9;
-            color: #333;
+            font-family: 'Segoe UI', Arial, sans-serif;
             margin: 0;
-            padding: 20px;
-        }
-        .header {
+            padding: 0;
+            min-height: 100vh;
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+        }
+        .main-container {
+            flex: 1;
+            display: flex;
+            width: 100%;
+        }
+        .hero-section {
+            flex: 1;
+            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+            display: flex;
             align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: white;
+        }
+        .hero-content {
+            max-width: 500px;
+        }
+        .hero-title {
+            font-size: 42px;
+            font-weight: 700;
             margin-bottom: 20px;
         }
-        h1 {
-            color: #4CAF50;
-            margin: 0;
+        .hero-description {
+            font-size: 18px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            opacity: 0.9;
         }
-        .user-info {
+        .upload-section {
+            flex: 1;
+            background: #f8f9fa;
             display: flex;
             align-items: center;
-            gap: 10px;
+            justify-content: center;
+            padding: 40px;
         }
-        .logout-button {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
+        .upload-container {
+            background: #fff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            width: 100%;
+            max-width: 400px;
+            box-sizing: border-box;
         }
-        .logout-button:hover {
-            background-color: #c82333;
+        .upload-container h1 {
+            color: #2196F3;
+            margin-bottom: 20px;
+            font-size: 28px;
+            font-weight: 600;
         }
         form {
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 30px;
         }
-        input[type="file"], select, button {
-            display: block;
-            margin: 10px 0;
+        input[type="file"] {
             padding: 10px;
+            border: 2px dashed #2196F3;
+            border-radius: 8px;
             width: 100%;
-            max-width: 300px;
-        }
-        button {
-            background-color: #4CAF50;
-            color: white;
-            border: none;
+            box-sizing: border-box;
             cursor: pointer;
         }
+        button {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s;
+        }
         button:hover {
-            background-color: #45a049;
+            background-color: #1976D2;
         }
         .supported-formats {
             margin-top: 20px;
-            font-size: 0.9em;
+            font-size: 14px;
             color: #666;
-        }
-        .flash-messages {
-            color: #721c24;
-            background-color: #f8d7da;
-            border: 1px solid #f5c6cb;
-            padding: 10px;
-            margin: 10px 0;
-            border-radius: 4px;
-            display: none;
-        }
-        .flash-messages:not(:empty) {
-            display: block;
+            text-align: left;
         }
     </style>
 </head>
 <body>
     {% include 'header.html' %}
     
-    <div class="flash-messages">
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    {{ message }}<br>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
-    </div>
+    <div class="main-container">
+        <div class="hero-section">
+            <div class="hero-content">
+                <h1 class="hero-title">Upload Your Resume</h1>
+                <p class="hero-description">Take the first step towards your GitHub-hosted professional resume. Upload your resume file and we'll transform it into a sleek, developer-friendly website that stands out to employers.</p>
+            </div>
+        </div>
+        
+        <div class="upload-section">
+            <div class="upload-container">
+                <h1>Resume Upload</h1>
 
-    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".pdf,.pptx,.docx,.xlsx,.jpg,.jpeg,.png,.mp3,.wav,.html,.csv,.json,.xml,.md,.zip">
-        <select name="style">
-            <option value="default">Default Style</option>
-            <option value="github">GitHub Style</option>
-            <option value="notion">Notion Style</option>
-            <option value="medium">Medium Style</option>
-        </select>
-        <button type="submit">Convert</button>
-    </form>
+                <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" accept=".pdf,.docx,.md">
+                    <button type="submit">Create Resume Site</button>
+                </form>
 
-    <div class="supported-formats">
-        <p>Supported file formats: PDF, PPTX, DOCX, XLSX, JPG/JPEG, PNG, MP3, WAV, HTML, CSV, JSON, XML, MD, ZIP</p>
+                <div class="supported-formats">
+                    <p>Supported formats:</p>
+                    <p>PDF, DOCX, Markdown</p>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
