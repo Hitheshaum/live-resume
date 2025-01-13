@@ -324,17 +324,18 @@
             .then(response => {
                 if (response.status === 401) {
                     window.location.href = "{{ url_for('github_login') }}";
-                    return null;
+                    return;
                 }
-                return response.json();
-            })
-            .then(data => {
-                if (data && data.url) {
-                    alert('Published! View at: ' + data.url);
-                    closeGitHubModal();
-                } else if (data && data.error) {
-                    alert('Error: ' + data.error);
+                if (!response.ok) {
+                    return response.json().then(data => {
+                        throw new Error(data.error || 'Failed to save to GitHub');
+                    });
                 }
+                // For successful response, replace the entire page content
+                return response.text().then(html => {
+                    document.documentElement.innerHTML = html;
+                    history.pushState({}, '', window.location.href);
+                });
             })
             .catch(error => {
                 alert('Error: ' + error);

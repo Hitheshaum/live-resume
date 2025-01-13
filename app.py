@@ -349,7 +349,7 @@ def handle_github_save():
         html_content = styled_content[styled_content.find('</style>') + 8:].strip()
 
         url = save_to_github(html_content, css_content, repo_name)
-        return {"url": url}
+        return render_template('github_success.html', url=url)
     except Exception as e:
         return {"error": str(e)}, 500
 
