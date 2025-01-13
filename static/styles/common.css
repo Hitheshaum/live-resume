@@ -1,5 +1,5 @@
 .markdown-view {
-    width: 40%;
+    width: 50%;
     font-family: monospace;
     background: #ffffff;
     color: #333333;
@@ -11,6 +11,7 @@
     overflow-y: auto;
     height: 100vh;
     box-sizing: border-box;
+    flex: 1;
 }
 
 .controls {
@@ -27,21 +28,24 @@
 .container {
     display: flex;
     height: 100vh;
+    width: 100%;
 }
 
 /* Common styles for all views */
 .html-view {
-    width: 60%;
+    width: 50%;
     height: 100vh;
     overflow-y: auto;
     transition: width 0.3s ease;
     background: #fff;
+    flex: 1;
 }
 
 .rendered-content {
     min-height: 100vh;
     box-sizing: border-box;
     padding: 40px;
+    width: 100%;
     max-width: 100%;
     margin: 0 auto;
 }
