@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>File to HTML Converter</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            color: #4CAF50;
+        }
+        form {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="file"], select, button {
+            display: block;
+            margin: 10px 0;
+            padding: 10px;
+            width: 100%;
+            max-width: 300px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .supported-formats {
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #666;
+        }
+        .flash-messages {
+            color: #721c24;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            display: none;
+        }
+        .flash-messages:not(:empty) {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <h1>Convert File to HTML</h1>
+    
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    {{ message }}<br>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <select name="style">
+            <option value="default">Default</option>
+            <option value="style1">Style 1</option>
+            <option value="style2">Style 2</option>
+        </select>
+        <button type="submit">Upload</button>
+    </form>
+
+    <div class="supported-formats">
+        <h3>Supported File Formats:</h3>
+        <p>
+            {% for ext in allowed_extensions %}
+                .{{ ext }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        </p>
+    </div>
+</body>
+</html>

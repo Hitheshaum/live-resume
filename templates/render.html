@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Rendered Content</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles/common.css') }}">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        select, button {
+            padding: 5px 10px;
+            margin: 0 5px;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            background: white;
+        }
+        button {
+            cursor: pointer;
+        }
+        button:hover {
+            background: #f8f9fa;
+        }
+        .file-info {
+            margin: 0;
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <div class="controls">
+        <span class="file-info">{{ original_file }}</span>
+        <select id="styleSelector" onchange="changeStyle(this.value)">
+            <option value="default" {% if style == 'default' %}selected{% endif %}>Default Style</option>
+            <option value="style1" {% if style == 'style1' %}selected{% endif %}>Terminal Style</option>
+            <option value="style2" {% if style == 'style2' %}selected{% endif %}>Modern Resume</option>
+        </select>
+        <button onclick="toggleFullscreen()">Toggle Full Screen</button>
+        <a href="{{ url_for('index') }}"><button>New File</button></a>
+    </div>
+
+    <div class="container" id="mainContainer">
+        <div class="markdown-view">{{ markdown_content }}</div>
+        <div class="html-view" id="htmlView">
+            {{ html_content|safe }}
+        </div>
+    </div>
+
+    <script>
+        function toggleFullscreen() {
+            document.getElementById('mainContainer').classList.toggle('fullscreen');
+        }
+
+        function changeStyle(style) {
+            fetch('/change_style', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    content: document.querySelector('.markdown-view').textContent,
+                    style: style
+                })
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('htmlView').innerHTML = html;
+            });
+        }
+    </script>
+</body>
+</html>

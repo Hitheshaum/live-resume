@@ -1,0 +1,53 @@
+@import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
+
+body { 
+    font-family: 'Lato', sans-serif;
+    margin: 0;
+    padding: 0;
+    background: #f5f7fa;
+    color: #2c3e50;
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.rendered-content {
+    background: #f5f7fa;
+    padding: 40px;
+}
+
+.resume-layout {
+    background: #fff;
+    padding: 40px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    font-family: 'Lato', sans-serif;
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.resume-layout h1 {
+    font-size: 2.5em;
+    color: #2c3e50;
+    border-bottom: 3px solid #3498db;
+    padding-bottom: 10px;
+    margin: 0 0 30px 0;
+}
+
+h2 {
+    color: #3498db;
+    font-size: 1.8em;
+    margin-top: 2em;
+    padding: 10px 20px;
+    background: #f8fafc;
+    border-radius: 5px;
+}
+
+section {
+    margin: 20px 0;
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* ...rest of the modern resume styles... */

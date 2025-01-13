@@ -1,0 +1,55 @@
+.markdown-view {
+    width: 40%;
+    font-family: monospace;
+    background: #ffffff;
+    color: #333333;
+    padding: 20px;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    border-right: 1px solid #dee2e6;
+    overflow-y: auto;
+    height: 100vh;
+    box-sizing: border-box;
+}
+
+.controls {
+    position: fixed;
+    top: 0;
+    right: 0;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom-left-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+/* Common styles for all views */
+.html-view {
+    width: 60%;
+    height: 100vh;
+    overflow-y: auto;
+    transition: width 0.3s ease;
+    background: #fff;
+}
+
+.rendered-content {
+    min-height: 100vh;
+    box-sizing: border-box;
+    padding: 40px;
+    max-width: 100%;
+    margin: 0 auto;
+}
+
+.fullscreen .html-view {
+    width: 100%;
+}
+
+.fullscreen .markdown-view {
+    display: none;
+}
