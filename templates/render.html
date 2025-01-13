@@ -254,7 +254,6 @@
                     <option value="style2" {% if style == 'style2' %}selected{% endif %}>Modern Resume</option>
                 </select>
                 <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
-                <button onclick="saveChanges()">Save Changes</button>
                 <button onclick="saveToGitHub()">Publish to GitHub</button>
             </div>
         </div>
@@ -327,19 +326,6 @@
             }, doneTypingInterval);
         }
 
-        function saveChanges() {
-            const content = document.querySelector('.markdown-view').value;
-            const blob = new Blob([content], { type: 'text/markdown' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'document.md';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
         function toggleFullscreen() {
             document.body.classList.toggle('fullscreen');
         }
@@ -380,25 +366,7 @@
 
         // Check for pending data on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const pendingContent = localStorage.getItem('pendingContent');
-            if (pendingContent) {
-                document.querySelector('.markdown-view').value = pendingContent;
-                document.getElementById('styleSelector').value = localStorage.getItem('pendingStyle') || 'default';
-                document.getElementById('repoName').value = localStorage.getItem('pendingRepo') || '';
-                
-                // Clear stored data
-                localStorage.removeItem('pendingContent');
-                localStorage.removeItem('pendingStyle');
-                localStorage.removeItem('pendingRepo');
-                
-                // Update preview
-                updatePreview();
-                
-                // Show GitHub modal if we have pending repo data
-                if (localStorage.getItem('pendingRepo')) {
-                    document.getElementById('githubModal').style.display = 'block';
-                }
-            }
+            updatePreview(); // Just call updatePreview directly
         });
 
         function closeGitHubModal() {
