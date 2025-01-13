@@ -1,0 +1,7 @@
+Flask
+markdown
+requests
+python-dotenv
+openai
+pytest
+# ...other dependencies...
