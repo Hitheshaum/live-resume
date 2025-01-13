@@ -77,16 +77,19 @@ def render_markdown(content, style):
     base_wrapper = '<div class="rendered-content">'
     base_wrapper_end = '</div>'
     
+    # Common markdown extensions for proper line breaks
+    extensions = ['nl2br', 'extra', 'fenced_code', 'tables']
+    
     if style == 'style1':
-        html_content = markdown.markdown(content, extensions=['extra', 'codehilite'])
+        html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('terminal')
         return f'<style>{css}</style>{base_wrapper}<div class="terminal">{html_content}</div>{base_wrapper_end}'
     elif style == 'style2':
-        html_content = markdown.markdown(content, extensions=['fenced_code', 'tables'])
+        html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('modern_resume')
         return f'<style>{css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
     else:
-        html_content = markdown.markdown(content)
+        html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('minimal')
         return f'<style>{css}</style>{base_wrapper}<div class="content-wrapper">{html_content}</div>{base_wrapper_end}'
 

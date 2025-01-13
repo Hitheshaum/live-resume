@@ -29,6 +29,33 @@
             font-size: 0.9em;
             color: #6c757d;
         }
+        .markdown-view {
+            width: 50%;
+            font-family: monospace;
+            background: #ffffff;
+            color: #333333;
+            padding: 20px;
+            font-size: 14px;
+            line-height: 1.6;
+            border-right: 1px solid #dee2e6;
+            height: 100vh;
+            box-sizing: border-box;
+            flex: 1;
+            resize: none;
+            border: none;
+            outline: none;
+            tab-size: 4;
+        }
+        .editing-controls {
+            position: fixed;
+            top: 40px;
+            right: 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-bottom-left-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
     </style>
 </head>
 <body>
@@ -42,15 +69,61 @@
         <button onclick="toggleFullscreen()">Toggle Full Screen</button>
         <a href="{{ url_for('index') }}"><button>New File</button></a>
     </div>
+    
+    <div class="editing-controls">
+        <button onclick="saveChanges()">Save Changes</button>
+    </div>
 
     <div class="container" id="mainContainer">
-        <div class="markdown-view">{{ markdown_content }}</div>
+        <textarea class="markdown-view" 
+                  spellcheck="false"
+                  oninput="updatePreview()">{{ markdown_content }}</textarea>
         <div class="html-view" id="htmlView">
             {{ html_content|safe }}
         </div>
     </div>
 
     <script>
+        let typingTimer;
+        const doneTypingInterval = 500; // ms
+
+        function updatePreview() {
+            clearTimeout(typingTimer);
+            typingTimer = setTimeout(() => {
+                // Get content and preserve newlines
+                const content = document.querySelector('.markdown-view').value;
+                const style = document.getElementById('styleSelector').value;
+                
+                fetch('/change_style', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        content: content,
+                        style: style
+                    })
+                })
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('htmlView').innerHTML = html;
+                });
+            }, doneTypingInterval);
+        }
+
+        function saveChanges() {
+            const content = document.querySelector('.markdown-view').value;
+            const blob = new Blob([content], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'document.md';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
         function toggleFullscreen() {
             document.getElementById('mainContainer').classList.toggle('fullscreen');
         }
@@ -62,7 +135,7 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    content: document.querySelector('.markdown-view').textContent,
+                    content: document.querySelector('.markdown-view').value,
                     style: style
                 })
             })
@@ -71,6 +144,18 @@
                 document.getElementById('htmlView').innerHTML = html;
             });
         }
+
+        // Handle tab key in textarea
+        document.querySelector('.markdown-view').addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+                updatePreview();
+            }
+        });
     </script>
 </body>
 </html>
