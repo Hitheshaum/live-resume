@@ -123,9 +123,8 @@ def github_callback():
     data = response.json()
     if 'access_token' in data:
         session['github_token'] = data['access_token']
-        # Redirect to render page with stored content and style
-        return redirect(url_for('render_page', 
-                              style=session.get('pending_style', 'default')))
+        # Redirect to the home page after successful login
+        return redirect(url_for('index'))
     return 'Failed to get access token'
 
 @app.route('/')
