@@ -1,83 +1,78 @@
 /* GitHub-style markdown CSS */
-body { 
+{
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
     font-size: 16px;
     line-height: 1.5;
     word-wrap: break-word;
     color: #1F2328;
     background-color: #ffffff;
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-}
-
-.rendered-content {
     max-width: 900px;
     margin: 0 auto;
     padding: 32px;
-    background: #ffffff;
 }
 
 .resume-layout {
     font-size: 16px;
     line-height: 1.5;
-    background: #fff;
-    padding: 30px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-    border-radius: 5px;
 }
 
 /* Headings */
-h1, h2, h3, h4, h5, h6 {
+.resume-layout h1, 
+.resume-layout h2, 
+.resume-layout h3, 
+.resume-layout h4, 
+.resume-layout h5, 
+.resume-layout h6 {
     margin-top: 24px;
     margin-bottom: 16px;
     font-weight: 600;
     line-height: 1.25;
 }
 
-h1 {
+.resume-layout h1 {
     padding-bottom: 0.3em;
     font-size: 2em;
     border-bottom: 1px solid #d0d7de;
 }
 
-h2 {
+.resume-layout h2 {
     padding-bottom: 0.3em;
     font-size: 1.5em;
     border-bottom: 1px solid #d0d7de;
 }
 
-h3 {
+.resume-layout h3 {
     font-size: 1.25em;
 }
 
-h4 {
+.resume-layout h4 {
     font-size: 1em;
 }
 
 /* Links */
-a {
+.resume-layout a {
     color: #0969da;
     text-decoration: none;
 }
 
-a:hover {
+.resume-layout a:hover {
     text-decoration: underline;
 }
 
 /* Lists */
-ul, ol {
+.resume-layout ul, 
+.resume-layout ol {
     margin-top: 0;
     margin-bottom: 16px;
     padding-left: 2em;
 }
 
-li {
+.resume-layout li {
     margin: 0.25em 0;
 }
 
 /* Code */
-code {
+.resume-layout code {
     padding: 0.2em 0.4em;
     margin: 0;
     font-size: 85%;
@@ -86,7 +81,7 @@ code {
     border-radius: 6px;
 }
 
-pre {
+.resume-layout pre {
     padding: 16px;
     overflow: auto;
     font-size: 85%;
@@ -95,14 +90,14 @@ pre {
     border-radius: 6px;
 }
 
-pre code {
+.resume-layout pre code {
     padding: 0;
     margin: 0;
     background-color: transparent;
 }
 
 /* Blockquotes */
-blockquote {
+.resume-layout blockquote {
     padding: 0 1em;
     color: #656d76;
     border-left: 0.25em solid #d0d7de;
@@ -110,29 +105,30 @@ blockquote {
 }
 
 /* Tables */
-table {
+.resume-layout table {
     border-spacing: 0;
     border-collapse: collapse;
     margin: 16px 0;
     width: 100%;
 }
 
-table th, table td {
+.resume-layout table th, 
+.resume-layout table td {
     padding: 6px 13px;
     border: 1px solid #d0d7de;
 }
 
-table th {
+.resume-layout table th {
     font-weight: 600;
     background-color: #f6f8fa;
 }
 
-table tr:nth-child(2n) {
+.resume-layout table tr:nth-child(2n) {
     background-color: #f6f8fa;
 }
 
 /* Horizontal Rule */
-hr {
+.resume-layout hr {
     height: 0.25em;
     padding: 0;
     margin: 24px 0;
@@ -141,25 +137,17 @@ hr {
 }
 
 /* Images */
-img {
+.resume-layout img {
     max-width: 100%;
     box-sizing: border-box;
 }
 
 /* Task Lists */
-.task-list-item {
+.resume-layout .task-list-item {
     list-style-type: none;
 }
 
-.task-list-item input {
+.resume-layout .task-list-item input {
     margin: 0 0.2em 0.25em -1.6em;
     vertical-align: middle;
-}
-
-section {
-    margin: 18px 0;
-    padding: 18px;
-    background: #fff;
-    border-radius: 5px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }

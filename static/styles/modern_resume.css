@@ -1,17 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Lato:wght@400;700&display=swap');
 
-body { 
+:root {
     font-family: 'Lato', sans-serif;
-    margin: 0;
-    padding: 0;
     background: #f5f7fa;
     color: #2c3e50;
     line-height: 1.6;
     min-height: 100vh;
-}
-
-.rendered-content {
-    background: #f5f7fa;
     padding: 40px;
 }
 
@@ -23,6 +17,8 @@ body {
     font-family: 'Lato', sans-serif;
     color: #2c3e50;
     line-height: 1.6;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .resume-layout h1 {
@@ -31,23 +27,108 @@ body {
     border-bottom: 3px solid #3498db;
     padding-bottom: 10px;
     margin: 0 0 30px 0;
+    font-family: 'Lato', sans-serif;
 }
 
-h2 {
+.resume-layout h2 {
     color: #3498db;
     font-size: 1.8em;
     margin-top: 2em;
     padding: 10px 20px;
     background: #f8fafc;
     border-radius: 5px;
+    font-family: 'Lato', sans-serif;
 }
 
-section {
-    margin: 20px 0;
-    padding: 20px;
-    background: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+.resume-layout h3 {
+    color: #2c3e50;
+    font-size: 1.4em;
+    margin-top: 1.5em;
+    font-family: 'Lato', sans-serif;
 }
 
-/* ...rest of the modern resume styles... */
+.resume-layout p {
+    margin: 1em 0;
+    font-family: 'Lato', sans-serif;
+}
+
+.resume-layout a {
+    color: #3498db;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s;
+}
+
+.resume-layout a:hover {
+    border-bottom-color: #3498db;
+}
+
+.resume-layout ul,
+.resume-layout ol {
+    padding-left: 1.5em;
+    margin: 1em 0;
+}
+
+.resume-layout li {
+    margin: 0.5em 0;
+}
+
+.resume-layout code {
+    background: #f8fafc;
+    padding: 0.2em 0.4em;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: Consolas, Monaco, 'Courier New', monospace;
+    color: #e74c3c;
+}
+
+.resume-layout pre {
+    background: #f8fafc;
+    padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    border: 1px solid #edf2f7;
+}
+
+.resume-layout pre code {
+    background: transparent;
+    padding: 0;
+    color: #2c3e50;
+}
+
+.resume-layout blockquote {
+    border-left: 4px solid #3498db;
+    margin: 1.5em 0;
+    padding: 0.5em 1em;
+    background: #f8fafc;
+    color: #34495e;
+}
+
+.resume-layout table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1.5em 0;
+}
+
+.resume-layout th,
+.resume-layout td {
+    padding: 12px;
+    border: 1px solid #edf2f7;
+    text-align: left;
+}
+
+.resume-layout th {
+    background: #f8fafc;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.resume-layout tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.resume-layout hr {
+    border: none;
+    border-top: 2px solid #edf2f7;
+    margin: 2em 0;
+}

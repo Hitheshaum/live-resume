@@ -12,6 +12,9 @@ body {
     background: #1e1e1e;
     min-height: 100vh;
     padding: 20px;
+    color: #00ff00;
+    font-family: 'Fira Code', monospace;
+    line-height: 1.6;
 }
 
 .terminal {
@@ -23,6 +26,8 @@ body {
     color: #00ff00;
     font-family: 'Fira Code', monospace;
     line-height: 1.6;
+    margin: 0 auto;
+    max-width: 900px;
 }
 
 .terminal::before {
@@ -39,24 +44,80 @@ body {
 .terminal h2, 
 .terminal h3 { 
     color: #0f0; 
-    margin-top: 30px; 
+    margin-top: 30px;
+    font-family: 'Fira Code', monospace;
 }
 
 .terminal p { 
-    opacity: 0;
-    animation: typing 1s ease-in-out forwards;
-    animation-delay: calc(var(--delay) * 100ms);
+    font-family: 'Fira Code', monospace;
+    color: #00ff00;
 }
 
-code { 
-    display: block;
-    background: #2d2d2d;
+.terminal code { 
+    background: #2a2a2a;
+    color: #0f0;
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-family: 'Fira Code', monospace;
+}
+
+.terminal pre {
+    background: #2a2a2a;
     padding: 15px;
+    border-radius: 5px;
+    overflow-x: auto;
+    font-family: 'Fira Code', monospace;
+}
+
+.terminal pre code {
+    background: transparent;
+    padding: 0;
+}
+
+.terminal a {
+    color: #0f0;
+    text-decoration: none;
+    border-bottom: 1px dashed #0f0;
+}
+
+.terminal a:hover {
+    border-bottom-style: solid;
+}
+
+.terminal ul, 
+.terminal ol {
+    padding-left: 20px;
+}
+
+.terminal li {
+    margin: 5px 0;
+}
+
+.terminal blockquote {
     border-left: 3px solid #0f0;
-    margin: 10px 0;
+    margin: 20px 0;
+    padding-left: 20px;
+    font-style: italic;
+}
+
+.terminal table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.terminal th,
+.terminal td {
+    border: 1px solid #0f0;
+    padding: 8px;
+    text-align: left;
+}
+
+.terminal th {
+    background: #2a2a2a;
 }
 
 @keyframes typing {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }

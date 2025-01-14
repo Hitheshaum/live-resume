@@ -211,7 +211,7 @@ def read_style_file(style_name):
     with open(style_path, 'r') as f:
         return f.read()
 
-def render_markdown(content, style):
+def render_markdown(content, style, for_github=False):
     # Base wrapper to ensure styles only apply to rendered content
     base_wrapper = '<div class="rendered-content">'
     base_wrapper_end = '</div>'
@@ -219,18 +219,21 @@ def render_markdown(content, style):
     # Common markdown extensions for proper line breaks
     extensions = ['nl2br', 'extra', 'fenced_code', 'tables']
     
+    # For GitHub Pages, we don't need the html-view scoping
+    scope_prefix = '' if for_github else '.html-view '
+    
     if style == 'style1':
         html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('terminal')
-        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="terminal">{html_content}</div>{base_wrapper_end}'
+        return f'<style>{scope_prefix}.rendered-content {css}</style>{base_wrapper}<div class="terminal">{html_content}</div>{base_wrapper_end}'
     elif style == 'style2':
         html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('modern_resume')
-        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
+        return f'<style>{scope_prefix}.rendered-content {css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
     else:  # Default to basic style
         html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('basic_resume')
-        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
+        return f'<style>{scope_prefix}.rendered-content {css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
 
 # GitHub configuration
 # Required scope: public_repo (for creating and updating public repositories)
@@ -340,7 +343,7 @@ def handle_github_save():
             return {"error": "Missing content"}, 400
 
         # Get the rendered HTML with style
-        styled_content = render_markdown(html_content, style)
+        styled_content = render_markdown(html_content, style, for_github=True)
         
         # Extract CSS and HTML
         css_start = styled_content.find('<style>') + 7
