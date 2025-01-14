@@ -24,7 +24,6 @@
             color: #6c757d;
         }
         .markdown-view {
-            width: 50%;
             font-family: monospace;
             background: #ffffff;
             color: #333333;
@@ -82,17 +81,12 @@
             margin-left: 10px;
         }
         .chat-section {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            width: 50%;
-            height: 30vh; /* Fixed height for chat section */
+            position: relative;
             background: #f8f9fa;
             border-top: 1px solid #dee2e6;
+            z-index: 100;
             padding: 10px;
-            box-sizing: border-box;
-            overflow-y: auto; /* Enable scrolling */
-            transition: transform 0.3s ease;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
         }
         .chat-section.fullscreen {
             transform: translateY(100%);
@@ -194,8 +188,8 @@
             font-family: monospace;
             resize: none;
             border: none;
-            border-right: 1px solid #dee2e6;
             outline: none;
+            tab-size: 4;
         }
         body.fullscreen .header {
             display: none;
@@ -243,40 +237,45 @@
     </style>
 </head>
 <body>
-    {% include 'header.html' %}
-    <div class="content-wrapper">
-        <div class="controls">
-            <span class="file-info">{{ original_file }}</span>
-            <div class="control-buttons">
-                <select id="styleSelector" onchange="changeStyle(this.value)">
-                    <option value="default" {% if style == 'default' %}selected{% endif %}>Default Style</option>
-                    <option value="style1" {% if style == 'style1' %}selected{% endif %}>Terminal Style</option>
-                    <option value="style2" {% if style == 'style2' %}selected{% endif %}>Modern Resume</option>
-                </select>
-                <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
-                <button onclick="saveToGitHub()">Publish to GitHub</button>
+    <div class="page-wrapper">
+        {% include 'header.html' %}
+        <div class="main-content">
+            <div class="content-wrapper">
+                <div class="controls">
+                    <span class="file-info">{{ original_file }}</span>
+                    <div class="control-buttons">
+                        <select id="styleSelector" onchange="changeStyle(this.value)">
+                            <option value="basic" {% if style == 'basic' or style == 'default' %}selected{% endif %}>Basic Resume</option>
+                            <option value="style1" {% if style == 'style1' %}selected{% endif %}>Terminal Style</option>
+                            <option value="style2" {% if style == 'style2' %}selected{% endif %}>Modern Resume</option>
+                        </select>
+                        <button onclick="toggleFullscreen()">Toggle Fullscreen</button>
+                        <button onclick="saveToGitHub()">Publish to GitHub</button>
+                    </div>
+                </div>
+                <div class="preview-container">
+                    <div class="left-section">
+                        <textarea class="markdown-view preview-content" 
+                                  spellcheck="false"
+                                  oninput="updatePreview()">{{ markdown_content }}</textarea>
+                        <div class="chat-section">
+                            <div class="chat-input">
+                                <input type="text" id="chatInput" placeholder="Ask AI to improve your markdown..." 
+                                       aria-label="AI improvement request">
+                                <button onclick="askAI()" id="askAIButton">Ask AI</button>
+                            </div>
+                            <div id="chatExplanation" class="chat-explanation"></div>
+                            <div class="history-controls">
+                                <button onclick="undoLastChange()" id="undoButton" disabled>Undo</button>
+                                <button onclick="redoLastChange()" id="redoButton" disabled>Redo</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="html-view preview-content" id="htmlView">
+                        {{ html_content|safe }}
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="preview-container">
-            <textarea class="markdown-view preview-content" 
-                      spellcheck="false"
-                      oninput="updatePreview()">{{ markdown_content }}</textarea>
-            <div class="html-view preview-content" id="htmlView">
-                {{ html_content|safe }}
-            </div>
-        </div>
-    </div>
-
-    <div class="chat-section">
-        <div class="chat-input">
-            <input type="text" id="chatInput" placeholder="Ask AI to improve your markdown..." 
-                   aria-label="AI improvement request">
-            <button onclick="askAI()" id="askAIButton">Ask AI</button>
-        </div>
-        <div id="chatExplanation" class="chat-explanation"></div>
-        <div class="history-controls">
-            <button onclick="undoLastChange()" id="undoButton" disabled>Undo</button>
-            <button onclick="redoLastChange()" id="redoButton" disabled>Redo</button>
         </div>
     </div>
 
@@ -328,6 +327,12 @@
 
         function toggleFullscreen() {
             document.body.classList.toggle('fullscreen');
+            const button = document.querySelector('button[onclick="toggleFullscreen()"]');
+            if (document.body.classList.contains('fullscreen')) {
+                button.textContent = 'Exit Fullscreen';
+            } else {
+                button.textContent = 'Toggle Fullscreen';
+            }
         }
 
         function changeStyle(style) {

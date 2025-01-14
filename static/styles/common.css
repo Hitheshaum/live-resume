@@ -1,5 +1,52 @@
-.markdown-view {
+/* Reset body margin and set full height */
+body {
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Main wrapper that contains everything */
+.page-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* Main content area below header */
+.main-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.content-wrapper {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.preview-container {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+.left-section {
     width: 50%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid #dee2e6;
+}
+
+body.fullscreen .left-section {
+    display: none;
+}
+
+.markdown-view {
+    width: 100%;
     font-family: monospace;
     background: #ffffff;
     color: #333333;
@@ -7,13 +54,34 @@
     font-size: 14px;
     line-height: 1.6;
     white-space: pre-wrap;
-    border-right: 1px solid #dee2e6;
     overflow-y: auto;
-    height: 100vh;
     box-sizing: border-box;
     flex: 1;
     word-wrap: break-word;
     -webkit-user-modify: read-write-plaintext-only;
+}
+
+.chat-section {
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 10px;
+    flex: 0 0 auto;
+    min-height: 150px;
+    max-height: 30vh;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-y: auto;
+}
+
+.chat-input {
+    width: 100%;
+    display: flex;
+    gap: 10px;
+}
+
+.chat-input input {
+    flex: 1;
+    min-width: 0;
 }
 
 .controls {
@@ -36,11 +104,14 @@
 /* Common styles for all views */
 .html-view {
     width: 50%;
-    height: 100vh;
     overflow-y: auto;
     transition: width 0.3s ease;
     background: #fff;
     flex: 1;
+}
+
+body.fullscreen .html-view {
+    width: 100%;
 }
 
 .rendered-content {
@@ -50,10 +121,6 @@
     width: 100%;
     max-width: 100%;
     margin: 0 auto;
-}
-
-.fullscreen .html-view {
-    width: 100%;
 }
 
 .fullscreen .markdown-view {

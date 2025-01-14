@@ -96,7 +96,7 @@ def dashboard():
 @app.route('/render/<style>')
 @app.route('/render')
 @login_required
-def render_page(style='default'):
+def render_page(style='basic'):
     """Endpoint to show the render page with a specific style"""
     return render_template('render.html', 
                          markdown_content=session.get('pending_content', ''),
@@ -109,7 +109,7 @@ def render_page(style='default'):
 def github_login():
     # Store the current state
     session['pending_content'] = request.args.get('content', '')
-    session['pending_style'] = request.args.get('style', 'default')
+    session['pending_style'] = request.args.get('style', 'basic')
     session['pending_filename'] = request.args.get('filename', 'New Document')
     
     # Generate the rendered HTML and store it
@@ -155,7 +155,7 @@ def github_callback():
 def change_style():
     data = request.get_json()
     content = data.get('content', '')
-    style = data.get('style', 'default')
+    style = data.get('style', 'basic')
     return render_markdown(content, style)
 
 @app.route('/upload', methods=['POST'])
@@ -187,7 +187,7 @@ def upload_file():
         # Store content in session
         session['pending_content'] = markdown_content
         session['pending_filename'] = file.filename
-        session['pending_style'] = request.form.get('style', 'default')
+        session['pending_style'] = request.form.get('style', 'basic')
 
         # Convert markdown to HTML with selected style
         html_content = render_markdown(markdown_content, session['pending_style'])
@@ -227,10 +227,10 @@ def render_markdown(content, style):
         html_content = markdown.markdown(content, extensions=extensions)
         css = read_style_file('modern_resume')
         return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
-    else:
+    else:  # Default to basic style
         html_content = markdown.markdown(content, extensions=extensions)
-        css = read_style_file('minimal')
-        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="content-wrapper">{html_content}</div>{base_wrapper_end}'
+        css = read_style_file('basic_resume')
+        return f'<style>.html-view .rendered-content {css}</style>{base_wrapper}<div class="resume-layout">{html_content}</div>{base_wrapper_end}'
 
 # GitHub configuration
 # Required scope: public_repo (for creating and updating public repositories)
