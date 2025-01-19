@@ -23,7 +23,15 @@ if not os.getenv('GITHUB_TOKEN'):
 os.environ['OPENAI_API_KEY'] = os.getenv('GITHUB_TOKEN')
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Better secret key for sessions
+# Use a stable secret key from environment variable, with a fallback
+app.secret_key = os.getenv('FLASK_SECRET_KEY', os.urandom(24))
+# Configure session for production
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=1800  # 30 minutes
+)
 markitdown = MarkItDown()
 
 def login_required(f):
@@ -48,6 +56,10 @@ GITHUB_CLIENT_SECRET = os.getenv('GITHUB_CLIENT_SECRET')
 GITHUB_AUTHORIZE_URL = 'https://github.com/login/oauth/authorize'
 GITHUB_TOKEN_URL = 'https://github.com/login/oauth/access_token'
 GITHUB_API_URL = 'https://api.github.com'
+
+# Temp directory configuration
+TEMP_DIR = os.getenv('TEMP_DIR', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'temp'))
+os.makedirs(TEMP_DIR, exist_ok=True)
 
 # Configure OpenAI client with Azure endpoint
 client = OpenAI(
@@ -133,23 +145,54 @@ def github_logout():
 
 @app.route('/login/github/callback')
 def github_callback():
-    if 'error' in request.args:
-        flash(f"GitHub Error: {request.args['error']}")
-        return redirect(url_for('login'))
-    
+    # Get the authorization code from the callback
     code = request.args.get('code')
-    response = requests.post(GITHUB_TOKEN_URL, data={
+    if not code:
+        flash('GitHub authorization failed', 'error')
+        return redirect(url_for('login'))
+
+    # Exchange code for access token
+    data = {
         'client_id': GITHUB_CLIENT_ID,
         'client_secret': GITHUB_CLIENT_SECRET,
         'code': code
-    }, headers={'Accept': 'application/json'})
+    }
+    headers = {'Accept': 'application/json'}
+    response = requests.post(GITHUB_TOKEN_URL, data=data, headers=headers)
     
-    data = response.json()
-    if 'access_token' in data:
-        session['github_token'] = data['access_token']
-        # Redirect to the home page after successful login
-        return redirect(url_for('dashboard'))
-    return 'Failed to get access token'
+    if response.status_code != 200:
+        flash('Failed to obtain access token', 'error')
+        return redirect(url_for('login'))
+
+    access_token = response.json().get('access_token')
+    if not access_token:
+        flash('No access token received', 'error')
+        return redirect(url_for('login'))
+
+    # Get user information
+    headers = {
+        'Authorization': f'token {access_token}',
+        'Accept': 'application/json'
+    }
+    user_response = requests.get(f'{GITHUB_API_URL}/user', headers=headers)
+    
+    if user_response.status_code != 200:
+        flash('Failed to get user information', 'error')
+        return redirect(url_for('login'))
+
+    user_data = user_response.json()
+    
+    # Set session data
+    session.permanent = True
+    session['github_token'] = access_token
+    session['github_username'] = user_data.get('login')
+    
+    # Ensure the response is not cached
+    response = redirect(url_for('dashboard'))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
 
 @app.route('/change_style', methods=['POST'])
 def change_style():
@@ -176,8 +219,7 @@ def upload_file():
 
     try:
         # Save the file temporarily
-        temp_path = os.path.join('temp', file.filename)
-        os.makedirs('temp', exist_ok=True)
+        temp_path = os.path.join(TEMP_DIR, file.filename)
         file.save(temp_path)
 
         # Convert to markdown using MarkItDown
@@ -392,4 +434,7 @@ def chat():
         return {"error": f"AI Error: {str(e)}"}, 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    debug_mode = os.getenv('FLASK_DEBUG', 'False').lower() == 'true'
+    # In production (non-debug), bind to 0.0.0.0
+    host = '127.0.0.1' if debug_mode else '0.0.0.0'
+    app.run(host=host, debug=debug_mode)
